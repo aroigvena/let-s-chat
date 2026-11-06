@@ -3,252 +3,226 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Let's Chat - AI English Speaking Tutor</title>
+  <title>Let's Chat - Family English Tutor</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    @keyframes blink { 0%, 90%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }
-    @keyframes nod { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-3px) rotate(1deg); } }
-    @keyframes mouth-talk {
-      0%, 100% { d: path("M 38 78 Q 50 81 62 78 Q 50 82 38 78"); }
-      25% { d: path("M 38 76 Q 50 90 62 76 Q 50 82 38 76"); }
-      50% { d: path("M 42 75 Q 50 88 58 75 Q 50 82 42 75"); }
-      75% { d: path("M 36 77 Q 50 93 64 77 Q 50 84 36 77"); }
-    }
-    .eye-blink { transform-origin: 50% 48%; animation: blink 4s infinite; }
-    .avatar-nodding { animation: nod 3s ease-in-out infinite; transform-origin: center bottom; }
-    .mouth-speaking { animation: mouth-talk 0.22s infinite alternate ease-in-out; }
     .pulse-ring { animation: pulseRing 1.8s cubic-bezier(0.215, 0.61, 0.355, 1) infinite; }
     @keyframes pulseRing {
-      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.7); }
-      70% { transform: scale(1.05); box-shadow: 0 0 0 16px rgba(99, 102, 241, 0); }
-      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
+      0% { transform: scale(0.96); box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.7); }
+      70% { transform: scale(1.04); box-shadow: 0 0 0 14px rgba(99, 102, 241, 0); }
+      100% { transform: scale(0.96); box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
     }
   </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans">
 
   <!-- Header -->
-  <header class="bg-slate-900/80 backdrop-blur border-b border-slate-800 sticky top-0 z-30 px-4 py-3">
+  <header class="bg-slate-900/90 backdrop-blur border-b border-slate-800 sticky top-0 z-30 px-4 py-3">
     <div class="max-w-4xl mx-auto flex items-center justify-between">
       <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center font-bold text-lg text-white shadow-lg shadow-indigo-500/30">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center font-bold text-lg text-white shadow-lg shadow-indigo-500/25">
           LC
         </div>
         <div>
           <h1 class="font-extrabold text-base md:text-lg tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white to-purple-300">
             Let's Chat
           </h1>
-          <p class="text-xs text-slate-400">Family English Tutor</p>
+          <p class="text-xs text-slate-400">Tutor de Inglés Familiar</p>
         </div>
       </div>
 
-      <!-- Selector de perfil rápido -->
+      <!-- Selector de usuario y configuración de nivel -->
       <div class="flex items-center gap-2">
-        <select id="userSelector" onchange="switchProfile(this.value)" class="bg-slate-800 text-sm border border-slate-700 text-slate-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-indigo-500 cursor-pointer">
-          <!-- Opciones dinámicas -->
+        <select id="userSelector" onchange="switchProfile(this.value)" class="bg-slate-800 text-sm border border-slate-700 text-slate-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-indigo-500 cursor-pointer font-medium">
+          <!-- Opciones fijas: Roig, Isa, Abril -->
         </select>
-        <button onclick="openProfileModal()" title="Configuración de perfiles" class="p-2 text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-lg border border-slate-700 transition">
-          <i class="fa-solid fa-users-gear text-sm"></i>
+        <button onclick="openLevelModal()" title="Ajustar Nivel" class="p-2 text-indigo-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-lg border border-slate-700 transition flex items-center gap-1.5 text-xs">
+          <i class="fa-solid fa-graduation-cap"></i>
+          <span class="hidden sm:inline font-semibold">Nivel</span>
         </button>
       </div>
     </div>
   </header>
 
   <!-- Contenedor Principal -->
-  <main class="max-w-4xl mx-auto w-full flex-1 flex flex-col p-3 md:p-5 gap-4">
+  <main class="max-w-4xl mx-auto w-full flex-1 flex flex-col p-3 md:p-5 gap-3.5">
 
-    <!-- Tarjeta del Avatar y Estado del Tutor -->
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl flex flex-col sm:flex-row items-center gap-5">
-      <!-- SVG Avatar -->
-      <div class="relative flex-shrink-0">
-        <div id="avatarHalo" class="absolute inset-0 rounded-full bg-indigo-500/20 blur-xl transition-all duration-300"></div>
-        <div class="relative w-32 h-32 md:w-36 md:h-36 rounded-full bg-gradient-to-b from-indigo-950 to-slate-900 border-2 border-indigo-500/40 p-1 shadow-inner overflow-hidden flex items-center justify-center">
-          <svg id="teacherAvatar" class="w-full h-full avatar-nodding" viewBox="0 0 100 100">
-            <defs>
-              <linearGradient id="skin" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stop-color="#FFDFC4" />
-                <stop offset="100%" stop-color="#F0B892" />
-              </linearGradient>
-              <linearGradient id="hair" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#4A2810" />
-                <stop offset="100%" stop-color="#281406" />
-              </linearGradient>
-            </defs>
-
-            <!-- Pelo fondo -->
-            <path d="M 22 45 Q 16 80 26 88 Q 30 65 32 50 Z" fill="url(#hair)" />
-            <path d="M 78 45 Q 84 80 74 88 Q 70 65 68 50 Z" fill="url(#hair)" />
-
-            <!-- Cuello -->
-            <path d="M 43 68 L 57 68 L 59 84 L 41 84 Z" fill="#E8AA84" />
-            
-            <!-- Ropa -->
-            <path d="M 28 84 Q 50 78 72 84 L 80 100 L 20 100 Z" fill="#4F46E5" />
-            <path d="M 45 84 L 50 92 L 55 84 Z" fill="#FFFFFF" />
-
-            <!-- Cabeza -->
-            <ellipse cx="50" cy="50" rx="22" ry="25" fill="url(#skin)" />
-
-            <!-- Pelo frontal -->
-            <path d="M 28 42 Q 50 20 72 42 Q 62 26 50 27 Q 38 26 28 42 Z" fill="url(#hair)" />
-            <path d="M 27 42 Q 35 32 45 35 Q 32 37 28 46 Z" fill="url(#hair)" />
-
-            <!-- Cejas gesticulantes -->
-            <path id="leftEyebrow" d="M 37 39 Q 42 37 46 39" stroke="#321706" stroke-width="1.8" fill="none" stroke-linecap="round" />
-            <path id="rightEyebrow" d="M 54 39 Q 58 37 63 39" stroke="#321706" stroke-width="1.8" fill="none" stroke-linecap="round" />
-
-            <!-- Ojos -->
-            <g class="eye-blink">
-              <ellipse cx="42" cy="46" rx="3.5" ry="3.8" fill="#FFFFFF" />
-              <circle cx="42.5" cy="46" r="2.1" fill="#2C4E3D" />
-              <circle cx="43.5" cy="45" r="0.8" fill="#FFFFFF" />
-              
-              <ellipse cx="58" cy="46" rx="3.5" ry="3.8" fill="#FFFFFF" />
-              <circle cx="57.5" cy="46" r="2.1" fill="#2C4E3D" />
-              <circle cx="58.5" cy="45" r="0.8" fill="#FFFFFF" />
-            </g>
-
-            <!-- Nariz -->
-            <path d="M 50 49 Q 51 55 49 56" stroke="#D18C63" stroke-width="1.4" fill="none" stroke-linecap="round" />
-
-            <!-- Mejillas sonrojadas -->
-            <circle cx="36" cy="55" r="3.2" fill="#FA8072" opacity="0.35" />
-            <circle cx="64" cy="55" r="3.2" fill="#FA8072" opacity="0.35" />
-
-            <!-- Boca Interactiva (Sincronización labial) -->
-            <path id="avatarMouth" d="M 43 65 Q 50 69 57 65 Q 50 67 43 65" fill="#C53D43" stroke="#A1272D" stroke-width="0.8" />
-          </svg>
+    <!-- Tarjeta de Estado del Alumno Activo -->
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-3.5 w-full sm:w-auto">
+        <div id="userAvatarIcon" class="w-12 h-12 rounded-xl bg-indigo-950 border border-indigo-500/40 flex items-center justify-center text-xl text-indigo-400 flex-shrink-0 shadow-inner">
+          <i class="fa-solid fa-user"></i>
         </div>
-        <div id="statusBadge" class="absolute -bottom-1 -right-1 bg-emerald-500 text-slate-950 font-bold text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full border-2 border-slate-900 shadow">
-          Ready
+        <div>
+          <div class="flex items-center gap-2">
+            <h2 id="bannerName" class="text-base font-bold text-white">Roig</h2>
+            <span id="bannerLevel" class="text-xs bg-indigo-500/20 text-indigo-300 font-bold px-2 py-0.5 rounded border border-indigo-500/30">A2</span>
+            <span id="speedIndicator" class="text-[10px] text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700/60 font-mono">0.85x</span>
+          </div>
+          <div id="bannerTopics" class="text-xs text-slate-400 mt-0.5 flex flex-wrap gap-1">
+            <!-- Temas activos -->
+          </div>
         </div>
       </div>
 
-      <!-- Datos del tutor y del estudiante activo -->
-      <div class="flex-1 text-center sm:text-left space-y-2">
-        <div class="flex flex-wrap items-center justify-center sm:justify-between gap-2">
-          <div>
-            <h2 class="text-lg font-bold text-white flex items-center gap-2 justify-center sm:justify-start">
-              Teacher Sarah
-              <span class="text-xs bg-indigo-500/20 text-indigo-300 font-medium px-2 py-0.5 rounded border border-indigo-500/30">Native AI Tutor</span>
-            </h2>
-            <p id="profileBanner" class="text-xs text-slate-400 mt-0.5">Estudiante: <span id="bannerName" class="text-slate-200 font-semibold">Cargando...</span> | Nivel: <span id="bannerLevel" class="text-indigo-400 font-semibold">A2</span></p>
-          </div>
-          
-          <!-- Controles de voz -->
-          <div class="flex items-center gap-1.5 bg-slate-800/80 p-1.5 rounded-lg border border-slate-700/60 text-xs">
-            <span class="text-slate-400 pl-1"><i class="fa-solid fa-earth-americas mr-1"></i>Acento:</span>
-            <select id="voiceAccent" onchange="updateVoiceSettings()" class="bg-slate-900 text-xs text-slate-200 rounded px-2 py-1 border border-slate-700 focus:outline-none">
-              <option value="en-US">US (American)</option>
-              <option value="en-GB">UK (British)</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Globo de frase actual hablada por el avatar -->
-        <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-3 relative">
-          <div class="text-[11px] uppercase tracking-wider text-slate-500 font-semibold mb-1 flex items-center gap-1.5">
-            <i class="fa-solid fa-volume-high text-indigo-400"></i> Sarah dice:
-          </div>
-          <p id="liveTeacherSpeech" class="text-sm text-indigo-100 italic">"Hi! I'm Sarah. Pick a topic or press the microphone to talk with me!"</p>
-        </div>
+      <!-- Ajustes de pronunciación y cambio de temas -->
+      <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+        <button onclick="openInterestsModal(true)" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 px-2.5 py-1.5 rounded-lg transition">
+          <i class="fa-solid fa-sliders mr-1 text-indigo-400"></i>Mis temas
+        </button>
+        <select id="voiceAccent" onchange="updateVoiceSettings()" class="bg-slate-800 text-xs text-slate-200 rounded-lg px-2.5 py-1.5 border border-slate-700 focus:outline-none">
+          <option value="en-US">Acento US</option>
+          <option value="en-GB">Acento UK</option>
+        </select>
       </div>
     </div>
 
-    <!-- Barra de selección de temas y modo -->
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-      <button onclick="setScenario('casual')" class="scenario-btn active p-2.5 rounded-xl border border-indigo-500/50 bg-indigo-950/40 text-left transition hover:border-indigo-400">
-        <div class="text-xs font-semibold text-indigo-300"><i class="fa-regular fa-comments mr-1.5"></i>Casual Chat</div>
-        <div class="text-[11px] text-slate-400 truncate">Hobbies, series, día a día</div>
-      </button>
-      <button onclick="setScenario('travel')" class="scenario-btn p-2.5 rounded-xl border border-slate-800 bg-slate-900 text-left transition hover:border-slate-700">
-        <div class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-plane-departure mr-1.5"></i>Travel & Food</div>
-        <div class="text-[11px] text-slate-400 truncate">Aeropuertos, hoteles, cenas</div>
-      </button>
-      <button onclick="setScenario('interview')" class="scenario-btn p-2.5 rounded-xl border border-slate-800 bg-slate-900 text-left transition hover:border-slate-700">
-        <div class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-briefcase mr-1.5"></i>Work / School</div>
-        <div class="text-[11px] text-slate-400 truncate">Entrevistas, presentaciones</div>
-      </button>
-      <button onclick="startLevelQuiz()" class="p-2.5 rounded-xl border border-amber-500/40 bg-amber-950/20 text-left transition hover:border-amber-400">
-        <div class="text-xs font-semibold text-amber-300"><i class="fa-solid fa-graduation-cap mr-1.5"></i>Test de Nivel</div>
-        <div class="text-[11px] text-amber-400/80 truncate">Calibrar de A1 a C1</div>
-      </button>
+    <!-- Historial de Chat & Correcciones -->
+    <div id="chatHistory" class="flex-1 bg-slate-900/60 border border-slate-800/80 rounded-2xl p-4 overflow-y-auto min-h-[360px] max-h-[500px] space-y-4">
+      <!-- Mensajes dinámicos -->
     </div>
 
-    <!-- Historial de Conversación & Correcciones estilo Loora -->
-    <div id="chatHistory" class="flex-1 bg-slate-900/60 border border-slate-800/80 rounded-2xl p-4 overflow-y-auto max-h-[380px] space-y-4">
-      <!-- Los mensajes se insertan aquí -->
-    </div>
-
-    <!-- Panel de Entrada de Audio / Voz y Texto -->
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3 shadow-lg flex flex-col gap-2.5">
+    <!-- Panel de Entrada de Audio y Texto -->
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3 shadow-lg flex flex-col gap-2">
       <div class="flex items-center gap-2">
-        
-        <!-- Botón Gran Micrófono PTT -->
-        <button id="micBtn" onclick="toggleVoiceRecording()" class="relative flex-shrink-0 w-13 h-13 px-4 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold flex items-center justify-center gap-2 transition shadow-lg shadow-indigo-600/30">
-          <i id="micIcon" class="fa-solid fa-microphone text-lg"></i>
+        <button id="micBtn" onclick="toggleVoiceRecording()" class="flex-shrink-0 px-4 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold flex items-center justify-center gap-2 transition shadow-lg shadow-indigo-600/30">
+          <i id="micIcon" class="fa-solid fa-microphone text-base"></i>
           <span id="micLabel" class="text-xs hidden sm:inline">Hablar</span>
         </button>
 
-        <!-- Input de texto manual -->
         <div class="relative flex-1">
-          <input id="textInput" type="text" placeholder="Habla con el micrófono o escribe en inglés aquí..." onkeydown="if(event.key === 'Enter') handleUserSend()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 pr-10">
+          <input id="textInput" type="text" placeholder="Escribe en inglés o usa el micrófono..." onkeydown="if(event.key === 'Enter') handleUserSend()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 pr-10">
           <button onclick="handleUserSend()" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-indigo-400 p-1.5 transition">
             <i class="fa-solid fa-paper-plane text-sm"></i>
           </button>
         </div>
 
-        <button onclick="repeatLastTeacherAudio()" title="Repetir lo que dijo Sarah" class="p-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl border border-slate-700 transition">
+        <button onclick="repeatLastTeacherAudio()" title="Repetir último audio" class="p-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl border border-slate-700 transition">
           <i class="fa-solid fa-rotate-right text-sm"></i>
         </button>
       </div>
 
       <div class="flex items-center justify-between px-1 text-[11px] text-slate-500">
-        <span><i class="fa-solid fa-shield-halved mr-1"></i>Cada familiar guarda su progreso privado en este navegador</span>
-        <span id="sttStatus">Micrófono disponible</span>
+        <span id="sttStatus">Micrófono listo</span>
+        <button onclick="resetCurrentChat()" class="hover:text-rose-400 transition">
+          <i class="fa-regular fa-trash-can mr-1"></i>Limpiar conversación
+        </button>
       </div>
     </div>
   </main>
 
-  <!-- Modal Gestión de Perfiles Familiares -->
-  <div id="profilesModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-5 space-y-4 shadow-2xl">
-      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-        <h3 class="text-base font-bold text-white flex items-center gap-2">
-          <i class="fa-solid fa-users text-indigo-400"></i> Perfiles de la Familia
+  <!-- MODAL OBLIGATORIO DE PRIMERA VEZ: SELECCIÓN DE TEMAS -->
+  <div id="interestsModal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+      <div class="border-b border-slate-800 pb-3">
+        <span class="text-xs uppercase tracking-wider text-indigo-400 font-bold">Personalización</span>
+        <h3 class="text-lg font-bold text-white flex items-center gap-2 mt-0.5">
+          ¿De qué te gustaría hablar, <span id="modalTargetUser" class="text-indigo-300"></span>?
         </h3>
-        <button onclick="closeProfileModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+        <p class="text-xs text-slate-400 mt-1">Elige tus temas favoritos para adaptar las preguntas y el vocabulario a tu gusto:</p>
       </div>
 
-      <p class="text-xs text-slate-400">Selecciona o personaliza el nombre, nivel y temas favoritos de cada uno:</p>
-
-      <div id="profilesList" class="space-y-2.5 max-h-60 overflow-y-auto pr-1">
-        <!-- Renderizado dinámico de perfiles -->
+      <!-- Cuadrícula de temas seleccionables -->
+      <div id="topicsGrid" class="grid grid-cols-2 gap-2 max-h-60 overflow-y-auto pr-1">
+        <!-- Rellenado por JavaScript -->
       </div>
 
-      <div class="pt-2 border-t border-slate-800 flex justify-end gap-2">
-        <button onclick="closeProfileModal()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold">
-          Listo
+      <div class="pt-3 border-t border-slate-800 flex justify-end">
+        <button onclick="saveChosenTopics()" class="w-full sm:w-auto px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition shadow-lg shadow-indigo-600/30">
+          Guardar y Empezar a Charlar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL CAMBIO DE NIVEL (LOS NOMBRES ROIG, ISA, ABRIL SON FIJOS) -->
+  <div id="levelModal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-sm w-full p-5 space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-graduation-cap text-indigo-400"></i> Nivel de <span id="levelTargetName"></span>
+        </h3>
+        <button onclick="closeLevelModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <p class="text-xs text-slate-400">Elige el nivel de inglés. La velocidad del habla de la profesora se adaptará automáticamente:</p>
+
+      <div class="grid grid-cols-1 gap-2">
+        <button onclick="selectNewLevel('A1')" class="level-opt p-2.5 rounded-xl border border-slate-800 bg-slate-950 hover:border-indigo-500 flex items-center justify-between text-left transition">
+          <div>
+            <div class="font-bold text-sm text-indigo-300">A1 - Principiante</div>
+            <div class="text-[11px] text-slate-400">Ritmo muy pausado (0.75x) y vocabulario básico</div>
+          </div>
+          <i class="fa-solid fa-check text-indigo-400 hidden check-icon" id="chk-A1"></i>
+        </button>
+        <button onclick="selectNewLevel('A2')" class="level-opt p-2.5 rounded-xl border border-slate-800 bg-slate-950 hover:border-indigo-500 flex items-center justify-between text-left transition">
+          <div>
+            <div class="font-bold text-sm text-indigo-300">A2 - Elemental</div>
+            <div class="text-[11px] text-slate-400">Ritmo pausado (0.85x) y temas del día a día</div>
+          </div>
+          <i class="fa-solid fa-check text-indigo-400 hidden check-icon" id="chk-A2"></i>
+        </button>
+        <button onclick="selectNewLevel('B1')" class="level-opt p-2.5 rounded-xl border border-slate-800 bg-slate-950 hover:border-indigo-500 flex items-center justify-between text-left transition">
+          <div>
+            <div class="font-bold text-sm text-indigo-300">B1 - Intermedio</div>
+            <div class="text-[11px] text-slate-400">Velocidad estándar (0.95x) y oraciones compuestas</div>
+          </div>
+          <i class="fa-solid fa-check text-indigo-400 hidden check-icon" id="chk-B1"></i>
+        </button>
+        <button onclick="selectNewLevel('B2')" class="level-opt p-2.5 rounded-xl border border-slate-800 bg-slate-950 hover:border-indigo-500 flex items-center justify-between text-left transition">
+          <div>
+            <div class="font-bold text-sm text-indigo-300">B2 - Intermedio Alto</div>
+            <div class="text-[11px] text-slate-400">Velocidad natural (1.05x) y debates fluidos</div>
+          </div>
+          <i class="fa-solid fa-check text-indigo-400 hidden check-icon" id="chk-B2"></i>
+        </button>
+        <button onclick="selectNewLevel('C1')" class="level-opt p-2.5 rounded-xl border border-slate-800 bg-slate-950 hover:border-indigo-500 flex items-center justify-between text-left transition">
+          <div>
+            <div class="font-bold text-sm text-indigo-300">C1 - Avanzado</div>
+            <div class="text-[11px] text-slate-400">Velocidad nativa rápida (1.15x) e idioms</div>
+          </div>
+          <i class="fa-solid fa-check text-indigo-400 hidden check-icon" id="chk-C1"></i>
         </button>
       </div>
     </div>
   </div>
 
   <script>
-    // --- ESTADO Y CONFIGURACIÓN ---
-    const STORAGE_KEY = 'lets_chat_app_family_v2';
-    
-    let defaultProfiles = [
-      { id: 'dad', name: 'Papá', level: 'B1', topics: 'Trabajo, Viajes, Noticias', messages: [] },
-      { id: 'mom', name: 'Mamá', level: 'A2', topics: 'Conversación Diaria, Cocina, Viajes', messages: [] },
-      { id: 'daughter1', name: 'Hija Mayor', level: 'B2', topics: 'Música, Series, Amigos, Universidad', messages: [] },
-      { id: 'daughter2', name: 'Hija Menor', level: 'A1', topics: 'Colegio, Videojuegos, Animales', messages: [] }
+    // --- TEMAS DISPONIBLES ---
+    const ALL_TOPICS = [
+      { id: 'daily', label: 'Día a día y Rutina', icon: 'fa-house' },
+      { id: 'music', label: 'Música y Festivales', icon: 'fa-music' },
+      { id: 'series', label: 'Series y Cine', icon: 'fa-film' },
+      { id: 'gaming', label: 'Videojuegos y Tech', icon: 'fa-gamepad' },
+      { id: 'travel', label: 'Viajes y Ciudades', icon: 'fa-plane-departure' },
+      { id: 'food', label: 'Comida y Restaurantes', icon: 'fa-utensils' },
+      { id: 'work', label: 'Trabajo y Negocios', icon: 'fa-briefcase' },
+      { id: 'school', label: 'Estudios y Proyectos', icon: 'fa-graduation-cap' },
+      { id: 'sports', label: 'Deporte y Salud', icon: 'fa-basketball' },
+      { id: 'books', label: 'Libros y Debates', icon: 'fa-book-open' }
     ];
 
+    // NOMBRES FIJOS: ROIG, ISA Y ABRIL
+    const FIXED_USERS = [
+      { id: 'roig', name: 'Roig', icon: 'fa-user-tie', level: 'B1', topicsConfigured: false, topics: [], messages: [] },
+      { id: 'isa', name: 'Isa', icon: 'fa-user-nurse', level: 'A2', topicsConfigured: false, topics: [], messages: [] },
+      { id: 'abril', name: 'Abril', icon: 'fa-user-astronaut', level: 'A1', topicsConfigured: false, topics: [], messages: [] }
+    ];
+
+    // MAPA DE VELOCIDADES DE HABLA SEGÚN NIVEL
+    const LEVEL_RATES = {
+      'A1': 0.75,
+      'A2': 0.85,
+      'B1': 0.95,
+      'B2': 1.05,
+      'C1': 1.15
+    };
+
+    const STORAGE_KEY = 'lets_chat_app_v4_roig_isa_abril';
+
     let appState = {
-      activeUserId: 'dad',
-      scenario: 'casual',
+      activeUserId: 'roig',
       voiceAccent: 'en-US',
       isSpeaking: false,
       isListening: false,
@@ -257,33 +231,45 @@
 
     let synth = window.speechSynthesis;
     let recognition = null;
-    let mouthInterval = null;
-    let lastSpokenText = "Hello! I am Sarah, your English tutor with Let's Chat.";
+    let lastSpokenText = "";
+    let tempSelectedTopics = [];
 
     // --- INICIALIZACIÓN ---
     window.addEventListener('DOMContentLoaded', () => {
-      loadProfiles();
+      loadStorage();
       initSpeechRecognition();
       renderUserSelector();
-      renderChat();
-      greetActiveUser();
+      checkFirstTimeUser();
     });
 
-    function loadProfiles() {
+    function loadStorage() {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         try {
-          appState.profiles = JSON.parse(saved);
+          const parsed = JSON.parse(saved);
+          appState.profiles = FIXED_USERS.map(def => {
+            const match = parsed.find(p => p.id === def.id);
+            if (match) {
+              return {
+                ...def,
+                level: match.level || def.level,
+                topicsConfigured: match.topicsConfigured || false,
+                topics: match.topics || [],
+                messages: match.messages || []
+              };
+            }
+            return def;
+          });
         } catch(e) {
-          appState.profiles = defaultProfiles;
+          appState.profiles = FIXED_USERS;
         }
       } else {
-        appState.profiles = defaultProfiles;
-        saveProfiles();
+        appState.profiles = FIXED_USERS;
+        saveStorage();
       }
     }
 
-    function saveProfiles() {
+    function saveStorage() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(appState.profiles));
     }
 
@@ -301,20 +287,163 @@
         if (p.id === appState.activeUserId) opt.selected = true;
         sel.appendChild(opt);
       });
+      updateBannerUI();
+    }
 
+    function updateBannerUI() {
       const user = getActiveUser();
       document.getElementById('bannerName').textContent = user.name;
       document.getElementById('bannerLevel').textContent = user.level;
+      
+      const speed = LEVEL_RATES[user.level] || 0.95;
+      document.getElementById('speedIndicator').textContent = `${speed}x speed`;
+
+      const iconContainer = document.getElementById('userAvatarIcon');
+      iconContainer.innerHTML = `<i class="fa-solid ${user.icon}"></i>`;
+
+      const tCont = document.getElementById('bannerTopics');
+      tCont.innerHTML = '';
+      if (user.topics && user.topics.length > 0) {
+        user.topics.forEach(tId => {
+          const topObj = ALL_TOPICS.find(x => x.id === tId);
+          if (topObj) {
+            const span = document.createElement('span');
+            span.className = "bg-slate-800 text-indigo-300 px-1.5 py-0.5 rounded text-[10px] border border-slate-700";
+            span.textContent = topObj.label;
+            tCont.appendChild(span);
+          }
+        });
+      } else {
+        tCont.innerHTML = '<span class="text-amber-400 text-[11px]"><i class="fa-solid fa-circle-exclamation mr-1"></i>Sin temas seleccionados</span>';
+      }
     }
 
     function switchProfile(userId) {
       appState.activeUserId = userId;
       renderUserSelector();
-      renderChat();
-      greetActiveUser();
+      checkFirstTimeUser();
     }
 
-    // --- RECONOCIMIENTO Y SÍNTESIS DE VOZ ---
+    // --- PRIMERA VEZ: SELECCIÓN OBLIGATORIA DE TEMAS ---
+    function checkFirstTimeUser() {
+      const user = getActiveUser();
+      if (!user.topicsConfigured || !user.topics || user.topics.length === 0) {
+        openInterestsModal(false);
+      } else {
+        renderChat();
+        greetUser();
+      }
+    }
+
+    function openInterestsModal(isManualEdit) {
+      const user = getActiveUser();
+      document.getElementById('modalTargetUser').textContent = user.name;
+      tempSelectedTopics = user.topics ? [...user.topics] : [];
+
+      const grid = document.getElementById('topicsGrid');
+      grid.innerHTML = '';
+
+      ALL_TOPICS.forEach(topic => {
+        const isChecked = tempSelectedTopics.includes(topic.id);
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.id = `topic-btn-${topic.id}`;
+        btn.className = `p-2.5 rounded-xl border text-left text-xs font-semibold flex items-center justify-between transition ${
+          isChecked 
+            ? 'bg-indigo-600/30 border-indigo-500 text-white' 
+            : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700'
+        }`;
+        btn.onclick = () => toggleTopicSelection(topic.id);
+        btn.innerHTML = `
+          <span><i class="fa-solid ${topic.icon} mr-1.5 text-indigo-400"></i>${topic.label}</span>
+          <i class="fa-solid fa-check text-xs ${isChecked ? 'text-indigo-400' : 'hidden'}"></i>
+        `;
+        grid.appendChild(btn);
+      });
+
+      document.getElementById('interestsModal').classList.remove('hidden');
+    }
+
+    function toggleTopicSelection(id) {
+      const btn = document.getElementById(`topic-btn-${id}`);
+      const check = btn.querySelector('.fa-check');
+      if (tempSelectedTopics.includes(id)) {
+        tempSelectedTopics = tempSelectedTopics.filter(t => t !== id);
+        btn.className = 'p-2.5 rounded-xl border text-left text-xs font-semibold flex items-center justify-between transition bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700';
+        check.classList.add('hidden');
+      } else {
+        tempSelectedTopics.push(id);
+        btn.className = 'p-2.5 rounded-xl border text-left text-xs font-semibold flex items-center justify-between transition bg-indigo-600/30 border-indigo-500 text-white';
+        check.classList.remove('hidden');
+      }
+    }
+
+    function saveChosenTopics() {
+      if (tempSelectedTopics.length === 0) {
+        alert("Por favor elige al menos un tema que te interese.");
+        return;
+      }
+      const user = getActiveUser();
+      user.topics = [...tempSelectedTopics];
+      user.topicsConfigured = true;
+      saveStorage();
+
+      document.getElementById('interestsModal').classList.add('hidden');
+      updateBannerUI();
+      renderChat();
+      greetUser();
+    }
+
+    // --- CAMBIO DE NIVEL (NOMBRES ROIG, ISA, ABRIL BLOQUEADOS) ---
+    function openLevelModal() {
+      const user = getActiveUser();
+      document.getElementById('levelTargetName').textContent = user.name;
+      document.querySelectorAll('.check-icon').forEach(icon => icon.classList.add('hidden'));
+      const activeIcon = document.getElementById(`chk-${user.level}`);
+      if (activeIcon) activeIcon.classList.remove('hidden');
+
+      document.getElementById('levelModal').classList.remove('hidden');
+    }
+
+    function closeLevelModal() {
+      document.getElementById('levelModal').classList.add('hidden');
+    }
+
+    function selectNewLevel(newLevel) {
+      const user = getActiveUser();
+      user.level = newLevel;
+      saveStorage();
+      renderUserSelector();
+      closeLevelModal();
+      const speed = LEVEL_RATES[newLevel] || 1.0;
+      speakText(`All set, ${user.name}! Your English level is now ${newLevel}, and speaking speed is adjusted to ${speed}x.`);
+    }
+
+    // --- CHAT Y VOZ ADAPTATIVA ---
+    function greetUser() {
+      const user = getActiveUser();
+      if (user.messages.length === 0) {
+        const topNames = user.topics.map(t => {
+          const found = ALL_TOPICS.find(x => x.id === t);
+          return found ? found.label : t;
+        }).slice(0, 2).join(' and ');
+
+        let greeting = "";
+        if (user.level === 'A1') {
+          greeting = `Hello ${user.name}! Nice to meet you. Let's practice English about ${topNames}. How are you today?`;
+        } else if (user.level === 'A2' || user.level === 'B1') {
+          greeting = `Hi ${user.name}! Ready to practice? I see you like ${topNames}. What did you do today?`;
+        } else {
+          greeting = `Welcome ${user.name}! Let's have a great conversation about ${topNames}. What's on your mind?`;
+        }
+
+        user.messages.push({ sender: 'tutor', text: greeting });
+        saveStorage();
+        renderChat();
+        speakText(greeting);
+      }
+    }
+
     function initSpeechRecognition() {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (SpeechRecognition) {
@@ -325,10 +454,9 @@
 
         recognition.onstart = () => {
           appState.isListening = true;
-          setAvatarState('listening');
-          document.getElementById('sttStatus').textContent = "Escuchando tu inglés...";
+          document.getElementById('sttStatus').textContent = "Escuchando en inglés...";
           document.getElementById('micBtn').classList.add('pulse-ring', 'bg-rose-600');
-          document.getElementById('micIcon').className = 'fa-solid fa-ear-listen text-lg';
+          document.getElementById('micIcon').className = 'fa-solid fa-ear-listen text-base';
         };
 
         recognition.onresult = (e) => {
@@ -337,22 +465,16 @@
           handleUserSend(transcript);
         };
 
-        recognition.onerror = (e) => {
-          console.warn("Speech recognition error:", e.error);
-          stopListening();
-        };
-
-        recognition.onend = () => {
-          stopListening();
-        };
+        recognition.onerror = () => stopListening();
+        recognition.onend = () => stopListening();
       } else {
-        document.getElementById('sttStatus').textContent = "Usa Chrome/Safari para dictado por voz";
+        document.getElementById('sttStatus').textContent = "Usa micrófono nativo (Chrome/Safari) o teclado móvil";
       }
     }
 
     function toggleVoiceRecording() {
       if (!recognition) {
-        alert("Tu navegador no soporta reconocimiento de voz nativo. Puedes escribir en el cuadro de texto.");
+        alert("En este navegador puedes usar el micrófono integrado en el teclado de tu móvil o escribir en la casilla.");
         return;
       }
       if (appState.isListening) {
@@ -360,22 +482,18 @@
       } else {
         synth.cancel();
         recognition.lang = appState.voiceAccent;
-        try {
-          recognition.start();
-        } catch(e) {
-          recognition.stop();
-        }
+        try { recognition.start(); } catch(e) { recognition.stop(); }
       }
     }
 
     function stopListening() {
       appState.isListening = false;
       document.getElementById('micBtn').classList.remove('pulse-ring', 'bg-rose-600');
-      document.getElementById('micIcon').className = 'fa-solid fa-microphone text-lg';
+      document.getElementById('micIcon').className = 'fa-solid fa-microphone text-base';
       document.getElementById('sttStatus').textContent = "Micrófono listo";
-      if (!appState.isSpeaking) setAvatarState('ready');
     }
 
+    // VELOCIDAD ADAPTADA AUTOMÁTICAMENTE AL NIVEL
     function speakText(text) {
       if (!synth) return;
       synth.cancel();
@@ -383,31 +501,10 @@
 
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = appState.voiceAccent;
-
       const user = getActiveUser();
-      // Velocidad adaptada al nivel del familiar
-      if (user.level === 'A1') utterance.rate = 0.85;
-      else if (user.level === 'A2') utterance.rate = 0.92;
-      else utterance.rate = 1.0;
-
-      utterance.onstart = () => {
-        appState.isSpeaking = true;
-        setAvatarState('speaking');
-        startLipSync();
-        document.getElementById('liveTeacherSpeech').textContent = `"${text}"`;
-      };
-
-      utterance.onend = () => {
-        appState.isSpeaking = false;
-        stopLipSync();
-        setAvatarState('ready');
-      };
-
-      utterance.onerror = () => {
-        appState.isSpeaking = false;
-        stopLipSync();
-        setAvatarState('ready');
-      };
+      
+      // Calibración exacta de velocidad por nivel
+      utterance.rate = LEVEL_RATES[user.level] || 0.95;
 
       synth.speak(utterance);
     }
@@ -421,76 +518,6 @@
       if (recognition) recognition.lang = appState.voiceAccent;
     }
 
-    // --- AVATAR INTERACTIVO Y LIP-SYNC ---
-    function setAvatarState(state) {
-      const badge = document.getElementById('statusBadge');
-      const halo = document.getElementById('avatarHalo');
-      const leftBrow = document.getElementById('leftEyebrow');
-      const rightBrow = document.getElementById('rightEyebrow');
-
-      if (state === 'speaking') {
-        badge.textContent = "Speaking";
-        badge.className = "absolute -bottom-1 -right-1 bg-amber-400 text-slate-950 font-bold text-[10px] uppercase px-2 py-0.5 rounded-full border-2 border-slate-900 shadow";
-        halo.className = "absolute inset-0 rounded-full bg-amber-500/30 blur-xl transition-all duration-300";
-        leftBrow.setAttribute('d', "M 37 36 Q 42 34 46 37");
-        rightBrow.setAttribute('d', "M 54 37 Q 58 34 63 36");
-      } else if (state === 'listening') {
-        badge.textContent = "Listening";
-        badge.className = "absolute -bottom-1 -right-1 bg-rose-500 text-white font-bold text-[10px] uppercase px-2 py-0.5 rounded-full border-2 border-slate-900 shadow animate-pulse";
-        halo.className = "absolute inset-0 rounded-full bg-rose-500/40 blur-xl transition-all duration-300";
-        leftBrow.setAttribute('d', "M 37 38 Q 42 35 46 37");
-        rightBrow.setAttribute('d', "M 54 36 Q 58 33 63 37");
-      } else {
-        badge.textContent = "Ready";
-        badge.className = "absolute -bottom-1 -right-1 bg-emerald-500 text-slate-950 font-bold text-[10px] uppercase px-2 py-0.5 rounded-full border-2 border-slate-900 shadow";
-        halo.className = "absolute inset-0 rounded-full bg-indigo-500/20 blur-xl transition-all duration-300";
-        leftBrow.setAttribute('d', "M 37 39 Q 42 37 46 39");
-        rightBrow.setAttribute('d', "M 54 39 Q 58 37 63 39");
-        resetMouth();
-      }
-    }
-
-    const mouthShapes = [
-      "M 43 65 Q 50 74 57 65 Q 50 68 43 65", // abierto O
-      "M 40 66 Q 50 78 60 66 Q 50 70 40 66", // amplio
-      "M 44 65 Q 50 71 56 65 Q 50 67 44 65", // medio
-      "M 42 66 Q 50 69 58 66 Q 50 67 42 66"  // sonrisa cerrada
-    ];
-
-    function startLipSync() {
-      const mouth = document.getElementById('avatarMouth');
-      let i = 0;
-      clearInterval(mouthInterval);
-      mouthInterval = setInterval(() => {
-        i = (i + 1) % mouthShapes.length;
-        mouth.setAttribute('d', mouthShapes[i]);
-      }, 140);
-    }
-
-    function stopLipSync() {
-      clearInterval(mouthInterval);
-      resetMouth();
-    }
-
-    function resetMouth() {
-      const mouth = document.getElementById('avatarMouth');
-      if (mouth) mouth.setAttribute('d', "M 43 65 Q 50 69 57 65 Q 50 67 43 65");
-    }
-
-    // --- SIMULADOR DE TUTORÍA Y FEEDBACK ESTILO LOORA ---
-    function greetActiveUser() {
-      const user = getActiveUser();
-      let greeting = "";
-      if (user.level === 'A1') {
-        greeting = `Hi ${user.name}! I am Sarah. How are you today?`;
-      } else if (user.level === 'A2' || user.level === 'B1') {
-        greeting = `Hello ${user.name}! Ready to practice English? What did you do today?`;
-      } else {
-        greeting = `Welcome back ${user.name}! Let's practice some fluent conversation. What topic shall we explore?`;
-      }
-      speakText(greeting);
-    }
-
     function handleUserSend(rawText) {
       const input = document.getElementById('textInput');
       const text = rawText || input.value.trim();
@@ -498,89 +525,65 @@
       input.value = '';
 
       const user = getActiveUser();
-      
-      // 1. Generar análisis gramatical estilo Loora
-      const analysis = analyzeGrammarAndFluency(text, user.level);
+      const analysis = analyzeGrammar(text);
 
-      // 2. Guardar mensaje de usuario
       user.messages.push({
         sender: 'user',
         text: text,
         feedback: analysis
       });
 
-      // 3. Respuesta pedagógica del tutor
-      const teacherReply = generateTeacherReply(text, user);
+      const reply = generateTutorReply(text, user);
       user.messages.push({
-        sender: 'teacher',
-        text: teacherReply
+        sender: 'tutor',
+        text: reply
       });
 
-      saveProfiles();
+      saveStorage();
       renderChat();
-      speakText(teacherReply);
+      speakText(reply);
     }
 
-    function analyzeGrammarAndFluency(text, level) {
+    function analyzeGrammar(text) {
       const lower = text.toLowerCase().trim();
       let correction = null;
       let betterWay = null;
-      let score = 92;
+      let score = 90;
 
-      // Errores clásicos de hispanohablantes
-      if (lower.includes("i have ") && (lower.includes(" years") || /\d+\s*years/.test(lower))) {
-        correction = "In English, use 'I am ... years old' instead of 'I have years'.";
+      if (lower.includes("i have ") && (lower.includes("years") || /\d+\s*years/.test(lower))) {
+        correction = "In English, say 'I am ... years old' instead of 'I have years'.";
         betterWay = text.replace(/i have/i, "I am");
         score = 75;
       } else if (lower.startsWith("is ") || lower.startsWith("are ")) {
-        correction = "Don't forget the subject pronoun (e.g. 'It is...' instead of just 'Is...').";
+        correction = "Remember to add the subject pronoun (e.g. 'It is...' instead of 'Is...').";
         betterWay = "It " + text;
         score = 80;
       } else if (lower.includes("people is")) {
-        correction = "'People' is plural in English. Say 'People are'.";
+        correction = "'People' is plural in English. Use 'People are'.";
         betterWay = text.replace(/people is/i, "people are");
         score = 78;
       } else if (lower.includes("depend of")) {
-        correction = "Say 'depends on', not 'depends of'.";
+        correction = "Say 'depends on', never 'depends of'.";
         betterWay = text.replace(/depend of/i, "depend on");
         score = 82;
       } else {
-        // Sugerencia de mayor naturalidad según longitud
-        if (text.split(" ").length <= 3) {
-          betterWay = `Well, in a full sentence: "${text}, to be honest."`;
-          score = 85;
-        } else {
-          betterWay = text.charAt(0).toUpperCase() + text.slice(1);
-          if (!betterWay.endsWith('.')) betterWay += '.';
-          score = 95;
-        }
+        betterWay = text.charAt(0).toUpperCase() + text.slice(1);
+        if (!betterWay.endsWith('.')) betterWay += '.';
+        score = 95;
       }
 
       return { score, correction, betterWay };
     }
 
-    function generateTeacherReply(userText, user) {
-      const lower = userText.toLowerCase();
-      
-      if (appState.scenario === 'travel') {
-        return `That sounds exciting! If we were at the airport or checking into a hotel right now, what would you ask the receptionist first?`;
-      }
-      if (appState.scenario === 'interview') {
-        return `Good point. In a professional interview context, could you elaborate a bit more on your key strengths?`;
-      }
-
-      // Respuestas adaptativas
+    function generateTutorReply(text, user) {
+      const lower = text.toLowerCase();
       if (lower.includes("hello") || lower.includes("hi")) {
-        return `Hello ${user.name}! It is wonderful talking with you. How was your morning?`;
+        return `Hello ${user.name}! How are you feeling today?`;
       }
-      if (lower.includes("good") || lower.includes("fine")) {
-        return `I'm glad to hear that! What are your plans for the rest of the day?`;
+      if (lower.includes("yes") || lower.includes("no")) {
+        return `Could you tell me a little bit more about why?`;
       }
-      if (lower.includes("movie") || lower.includes("music") || lower.includes("game")) {
-        return `Oh, I love that! Which one is your absolute favorite, and why?`;
-      }
-      
-      return `That's very interesting! Could you tell me a little bit more about that in full detail?`;
+      return `That's very interesting! How does that connect to your routine or what you like to do?`;
     }
 
     function renderChat() {
@@ -590,9 +593,9 @@
 
       if (!user.messages || user.messages.length === 0) {
         container.innerHTML = `
-          <div class="text-center py-8 text-slate-500 text-xs">
-            <i class="fa-regular fa-comment-dots text-2xl mb-2 text-slate-600 block"></i>
-            No hay mensajes aún en el historial de ${user.name}.<br>Presiona el micrófono y empieza a charlar con Sarah.
+          <div class="text-center py-12 text-slate-500 text-xs">
+            <i class="fa-regular fa-comments text-3xl mb-2 text-slate-600 block"></i>
+            No hay mensajes aún con ${user.name}.<br>Presiona el micrófono o escribe para comenzar.
           </div>
         `;
         return;
@@ -601,21 +604,21 @@
       user.messages.forEach(msg => {
         if (msg.sender === 'user') {
           const div = document.createElement('div');
-          div.className = "flex flex-col items-end gap-1.5 max-w-[88%] ml-auto";
+          div.className = "flex flex-col items-end gap-1.5 max-w-[90%] ml-auto";
           div.innerHTML = `
-            <div class="bg-indigo-600 text-white rounded-2xl rounded-tr-sm px-4 py-2.5 text-sm shadow">
+            <div class="bg-indigo-600 text-white rounded-2xl rounded-tr-sm px-4 py-2 text-sm shadow">
               ${msg.text}
             </div>
             ${msg.feedback ? `
-              <div class="bg-slate-800/90 border border-slate-700/80 rounded-xl p-2.5 text-xs text-slate-300 w-full space-y-1 shadow-sm">
+              <div class="bg-slate-800/90 border border-slate-700 rounded-xl p-2.5 text-xs text-slate-300 w-full space-y-1 shadow-sm">
                 <div class="flex items-center justify-between font-semibold text-[11px]">
                   <span class="text-indigo-400"><i class="fa-solid fa-sparkles mr-1"></i>Let's Chat Feedback</span>
-                  <span class="text-emerald-400">${msg.feedback.score}% Fluency</span>
+                  <span class="text-emerald-400 font-mono">${msg.feedback.score}%</span>
                 </div>
-                ${msg.feedback.correction ? `<p class="text-amber-300/90 text-[11px]"><i class="fa-solid fa-triangle-exclamation mr-1"></i>${msg.feedback.correction}</p>` : ''}
-                <div class="flex items-center justify-between text-slate-200 bg-slate-900/80 px-2 py-1.5 rounded border border-slate-800 text-[11px]">
-                  <span><strong>Native way:</strong> "${msg.feedback.betterWay}"</span>
-                  <button onclick="speakText('${msg.feedback.betterWay.replace(/'/g, "\\'")}')" class="text-indigo-400 hover:text-indigo-300 p-1">
+                ${msg.feedback.correction ? `<p class="text-amber-300/90 text-[11px]"><i class="fa-solid fa-circle-exclamation mr-1"></i>${msg.feedback.correction}</p>` : ''}
+                <div class="flex items-center justify-between bg-slate-900/80 px-2 py-1 rounded border border-slate-800 text-[11px]">
+                  <span><strong>Forma natural:</strong> "${msg.feedback.betterWay}"</span>
+                  <button onclick="speakText('${msg.feedback.betterWay.replace(/'/g, "\'")}')" class="text-indigo-400 hover:text-indigo-300 p-1">
                     <i class="fa-solid fa-volume-high"></i>
                   </button>
                 </div>
@@ -625,14 +628,14 @@
           container.appendChild(div);
         } else {
           const div = document.createElement('div');
-          div.className = "flex items-start gap-2.5 max-w-[88%]";
+          div.className = "flex items-start gap-2.5 max-w-[90%]";
           div.innerHTML = `
-            <div class="w-7 h-7 rounded-full bg-indigo-900/80 border border-indigo-500/40 flex items-center justify-center text-xs text-indigo-300 font-bold flex-shrink-0 mt-1">
-              S
+            <div class="w-7 h-7 rounded-full bg-slate-800 border border-indigo-500/30 flex items-center justify-center text-xs text-indigo-300 font-bold flex-shrink-0 mt-1">
+              AI
             </div>
-            <div class="bg-slate-800 border border-slate-700/60 rounded-2xl rounded-tl-sm px-4 py-2.5 text-sm text-slate-100 shadow">
+            <div class="bg-slate-800/90 border border-slate-700/60 rounded-2xl rounded-tl-sm px-4 py-2.5 text-sm text-slate-100 shadow">
               ${msg.text}
-              <button onclick="speakText('${msg.text.replace(/'/g, "\\'")}')" class="ml-2 text-indigo-400 hover:text-indigo-300 text-xs">
+              <button onclick="speakText('${msg.text.replace(/'/g, "\'")}')" class="ml-2 text-indigo-400 hover:text-indigo-300 text-xs">
                 <i class="fa-solid fa-volume-high"></i>
               </button>
             </div>
@@ -644,81 +647,13 @@
       container.scrollTop = container.scrollHeight;
     }
 
-    function setScenario(scen) {
-      appState.scenario = scen;
-      document.querySelectorAll('.scenario-btn').forEach(btn => {
-        btn.classList.remove('active', 'border-indigo-500/50', 'bg-indigo-950/40');
-        btn.classList.add('border-slate-800', 'bg-slate-900');
-      });
-      event.currentTarget.classList.add('active', 'border-indigo-500/50', 'bg-indigo-950/40');
-      
-      let msg = "";
-      if (scen === 'travel') msg = "Let's practice English for traveling! Imagine you just arrived in London.";
-      else if (scen === 'interview') msg = "Let's simulate a job or school interview. Tell me about your background!";
-      else msg = "Great, let's have a relaxed daily conversation!";
-
-      speakText(msg);
-    }
-
-    // --- TEST RÁPIDO DE NIVEL ---
-    function startLevelQuiz() {
+    function resetCurrentChat() {
       const user = getActiveUser();
-      const question = prompt(`Test rápido para ${user.name}:\n¿Cuál es tu nivel actual estimado? (Escribe: A1, A2, B1, B2 o C1):`, user.level);
-      if (question && ['A1','A2','B1','B2','C1'].includes(question.toUpperCase())) {
-        user.level = question.toUpperCase();
-        saveProfiles();
-        renderUserSelector();
-        speakText(`Awesome! I have adjusted your level to ${user.level}. Let's continue practicing!`);
-      }
-    }
-
-    // --- MODAL DE GESTIÓN DE PERFILES ---
-    function openProfileModal() {
-      const list = document.getElementById('profilesList');
-      list.innerHTML = '';
-
-      appState.profiles.forEach(p => {
-        const item = document.createElement('div');
-        item.className = "bg-slate-800/80 p-3 rounded-xl border border-slate-700 flex flex-col gap-2";
-        item.innerHTML = `
-          <div class="flex items-center justify-between">
-            <span class="font-bold text-sm text-white">${p.name}</span>
-            <span class="text-xs bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded font-mono font-bold">${p.level}</span>
-          </div>
-          <div class="text-[11px] text-slate-400">Intereses: ${p.topics}</div>
-          <div class="flex gap-2 text-xs">
-            <button onclick="editProfileLevel('${p.id}')" class="px-2 py-1 bg-slate-700 hover:bg-slate-600 rounded text-slate-200">Cambiar Nivel</button>
-            <button onclick="clearProfileHistory('${p.id}')" class="px-2 py-1 bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 rounded border border-rose-800/50">Borrar Chat</button>
-          </div>
-        `;
-        list.appendChild(item);
-      });
-
-      document.getElementById('profilesModal').classList.remove('hidden');
-    }
-
-    function closeProfileModal() {
-      document.getElementById('profilesModal').classList.add('hidden');
-      renderUserSelector();
-    }
-
-    function editProfileLevel(id) {
-      const p = appState.profiles.find(x => x.id === id);
-      const newLvl = prompt(`Nuevo nivel para ${p.name} (A1, A2, B1, B2, C1):`, p.level);
-      if (newLvl && ['A1','A2','B1','B2','C1'].includes(newLvl.toUpperCase())) {
-        p.level = newLvl.toUpperCase();
-        saveProfiles();
-        openProfileModal();
-      }
-    }
-
-    function clearProfileHistory(id) {
-      if (confirm("¿Seguro que quieres reiniciar las conversaciones de este perfil?")) {
-        const p = appState.profiles.find(x => x.id === id);
-        p.messages = [];
-        saveProfiles();
+      if (confirm(`¿Quieres reiniciar la conversación de ${user.name}?`)) {
+        user.messages = [];
+        saveStorage();
         renderChat();
-        openProfileModal();
+        greetUser();
       }
     }
   </script>
